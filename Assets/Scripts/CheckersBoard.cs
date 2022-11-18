@@ -12,6 +12,8 @@ namespace Checkers
 
         /*Por medio de un evento, actualizar los índices del tablero*/
         public static int[,] BOARD_INDEXES = new int[rows, cols];
+        
+        public static Tile[,] TilesArray { get; private set; } = new Tile[rows, cols];
 
         //El transform que guarda todas las filas del tablero.
         [SerializeField] private Transform rowsOfTilesFather;
@@ -28,7 +30,6 @@ namespace Checkers
         {
             int i = 0; int j = 0;
             //Arreglo de 8x8 donde se guardarán temporalmente los objetos casilla del tablero
-            Tile[,] tilesArray = new Tile[rows, cols];
 
             for(i = 0;i < rows;i++)
             {
@@ -38,8 +39,9 @@ namespace Checkers
                     BOARD_INDEXES[i,j] = 0; //Comienzan en un valor de cero
 
                     if (!tileOfChild) continue;
-                    tilesArray[i, j] = tileOfChild;
-                    tilesArray[i, j].PositionInBoard = new Vector2Int(i, j);
+                    TilesArray[i, j] = tileOfChild;
+                    TilesArray[i, j].PositionInBoard = new Vector2Int(i, j);
+                    TilesArray[i, j].gameObject.name = $"Tile[{i},{j}]";
                 }
             }
         }

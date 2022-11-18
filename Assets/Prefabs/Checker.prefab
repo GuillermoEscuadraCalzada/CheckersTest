@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4589879772603794624}
   - component: {fileID: 1213086806570209479}
   - component: {fileID: 6577746357070031723}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Checker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -128,3 +128,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   checkerColor: 0
+  isChecker: 0
+  positionInBoard: {x: 0, y: 0}
+  chipPlayer: {fileID: 0}
