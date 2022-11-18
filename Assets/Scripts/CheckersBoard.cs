@@ -23,6 +23,22 @@ namespace Checkers
             StartBoardIndexes();
         }
 
+        private void Update()
+        {
+            int i = 0; int j = 0;
+            //Arreglo de 8x8 donde se guardarán temporalmente los objetos casilla del tablero
+            string arrayString = "";
+            for (i = 0; i < rows; i++)
+            {
+                for (j = 0; j < cols; j++)
+                {
+                    arrayString += string.Format("{0}       ", BOARD_INDEXES[i, j]);
+                }
+                arrayString += System.Environment.NewLine + System.Environment.NewLine;
+            }
+            Debug.Log(arrayString);
+        }
+
         /// <summary>
         /// Se inicializan los valores del tablero
         /// </summary>
@@ -30,18 +46,18 @@ namespace Checkers
         {
             int i = 0; int j = 0;
             //Arreglo de 8x8 donde se guardarán temporalmente los objetos casilla del tablero
-
-            for(i = 0;i < rows;i++)
+            for (i = 0;i < rows;i++)
             {
                 for(j = 0; j < cols; j++)
                 {
                     Tile tileOfChild = rowsOfTilesFather.GetChild(i).GetChild(j).GetComponent<Tile>();
-                    BOARD_INDEXES[i,j] = 0; //Comienzan en un valor de cero
-
+                    BOARD_INDEXES[i, j] = 0; //Comienzan en un valor de cero
+                   
                     if (!tileOfChild) continue;
                     TilesArray[i, j] = tileOfChild;
                     TilesArray[i, j].PositionInBoard = new Vector2Int(i, j);
                     TilesArray[i, j].gameObject.name = $"Tile[{i},{j}]";
+
                 }
             }
         }

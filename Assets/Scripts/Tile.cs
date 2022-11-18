@@ -59,7 +59,9 @@ namespace Checkers
 
         private void OnTriggerExit(Collider other) {
             tileChipType = TileChipT.NONE;
-            CurrentChip= null;
+            CurrentChip = null;
+            chipMovement?.Invoke();
+            //CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType;
         }
 
         /// <summary>
@@ -67,12 +69,17 @@ namespace Checkers
         /// </summary>
         private void ChipMovesToTile()
         {
-            ///Se cambia el tipo de ficha 
-            ChangeTileType(CurrentChip.checkerColor, CurrentChip.IsChecker);
-            //La ficha evoluciona si es posible
-            CurrentChip.EvolveFromChipToChecker(isEndline, playerNumber);
-            CurrentChip.PositionInBoard = PositionInBoard;
+            if (CurrentChip)
+            {
+                ///Se cambia el tipo de ficha 
+                ChangeTileType(CurrentChip.checkerColor, CurrentChip.IsChecker);
+                //La ficha evoluciona si es posible
+                CurrentChip.EvolveFromChipToChecker(isEndline, playerNumber);
+                CurrentChip.PositionInBoard = PositionInBoard;
+            }
+
             CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType;
+
         }
 
     }
