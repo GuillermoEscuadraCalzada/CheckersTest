@@ -14,6 +14,15 @@ namespace Checkers
         public Chip_Color checkerColor; //El color de la ficha
         [SerializeField] bool isChecker; //Si es una dama o no
         [SerializeField] Player chipPlayer;
+        
+        /*Hacer sistema para que los tiles tengan su posición en el tablero
+        *Crear un arreglo de dos dimensiones donde se guardarán temporalmente los transform de los hijos de las filas.
+            *Así se les almacenará un número para su vector2Int a las casillas
+        *Al entrar al trigger, se llamará a un evento que hablará con las variables del tablero, fichas y casillas para actualizar su información.       
+        */
+
+        public Vector2Int PositionInBoard { get; set; }
+
 
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
 
