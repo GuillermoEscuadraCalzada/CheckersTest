@@ -21,10 +21,10 @@ namespace Checkers
         *Al entrar al trigger, se llamará a un evento que hablará con las variables del tablero, fichas y casillas para actualizar su información.       
         */
 
-        public Vector2Int PositionInBoard { get; set; }
-
-
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
+
+        public int ChipValueOnBoard => (int)chipPlayer.PlayerNumber;
+
 
         private void Awake()
         {

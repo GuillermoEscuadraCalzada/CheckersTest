@@ -5,22 +5,32 @@ using UnityEngine;
 namespace Checkers
 {
     public enum TileChipT { NONE, BLACK, WHITE, BLACK_KING, WHITE_KING}
+        public  delegate void OnChipMovement();
     public class Tile : MonoBehaviour
     {
         //El tipo de la ficha
         [SerializeField] TileChipT tileChipType = TileChipT.NONE;
         [SerializeField] PlayerNumber playerNumber = PlayerNumber.NONE;
+        [SerializeField] Vector2Int positionInBoard;
         [SerializeField] bool isEndline;
-
         public TileChipT TileCheckerType => tileChipType;
-        public Vector2Int PositionInBoard { get; set; }
+        public Vector2Int PositionInBoard { get => positionInBoard; set => positionInBoard = value; }
 
+        OnChipMovement chipMovement;
+
+        private void Awake()
+        {
+            chipMovement = ChipMovesToTile;
+        }
 
         private void OnTriggerEnter(Collider other)
         {
             Chip currentChip = other.gameObject.GetComponent<Chip>();
             ChangeTileType(currentChip.checkerColor, currentChip.IsChecker);
             currentChip.EvolveFromChipToChecker(isEndline, playerNumber);
+
+            chipMovement?.Invoke();
+
         }
 
         /// <summary>
@@ -42,7 +52,10 @@ namespace Checkers
         }
 
         private void OnTriggerExit(Collider other) => tileChipType= TileChipT.NONE;
-        
+        private void ChipMovesToTile()
+        {
+            CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType;
+        }
 
     }
 
