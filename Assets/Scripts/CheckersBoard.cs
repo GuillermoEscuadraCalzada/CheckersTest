@@ -8,7 +8,7 @@ namespace Checkers
         public const int cols = 8; //Las columnas totales
 
         /*Por medio de un evento, actualizar los índices del tablero*/
-        public int[,] boardIndexes = new int[rows, cols];
+        public static int[,] BOARD_INDEXES = new int[rows, cols];
 
         //public event CheckerHasEntered;
 
@@ -26,7 +26,7 @@ namespace Checkers
             {
                 for(int j = 0; j < cols; j++)
                 {
-                    boardIndexes[i,j] = 0; //Comienzan en un valor de cero
+                    BOARD_INDEXES[i,j] = 0; //Comienzan en un valor de cero
                 }
             }
         }

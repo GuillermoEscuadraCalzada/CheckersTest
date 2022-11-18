@@ -13,6 +13,7 @@ namespace Checkers
         [SerializeField] bool isEndline;
 
         public TileChipT TileCheckerType => tileChipType;
+        public Vector2Int PositionInBoard { get; set; }
 
 
         private void OnTriggerEnter(Collider other)
