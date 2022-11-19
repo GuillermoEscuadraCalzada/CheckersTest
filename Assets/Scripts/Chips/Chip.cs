@@ -27,9 +27,7 @@ namespace Checkers
         public Vector2Int PositionInBoard { get => positionInBoard; set => positionInBoard = value; }
 
         /*Hacer sistema para que los tiles tengan su posición en el tablero
-        *Crear un arreglo de dos dimensiones donde se guardarán temporalmente los transform de los hijos de las filas.
-            *Así se les almacenará un número para su vector2Int a las casillas
-        *Al entrar al trigger, se llamará a un evento que hablará con las variables del tablero, fichas y casillas para actualizar su información.       
+        *Crear un Sistema con el que el material de las tiles cambia de acuerdo a las acciones del jugador.
         */
 
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
