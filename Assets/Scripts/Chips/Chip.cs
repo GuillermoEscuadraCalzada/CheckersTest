@@ -12,11 +12,10 @@ namespace Checkers
     public class Chip : MonoBehaviour
     {
         public static int ChipLayer = 6;
-
         public Chip_Color checkerColor; //El color de la ficha
         [SerializeField] bool isChecker; //Si es una dama o no
-        [SerializeField] Vector2Int positionInBoard;
-        [SerializeField] Player chipPlayer;
+        [SerializeField] Vector2Int positionInBoard; //posicion de la ficha en el arreglo de dos dimensiones del tablero
+        [SerializeField] Player chipPlayer; //Referencia a su jugador
 
         public Color OriginalColor { get; private set; }
 
@@ -25,10 +24,6 @@ namespace Checkers
         private List<Tile> availableTiles = new List<Tile>(4);
 
         public Vector2Int PositionInBoard { get => positionInBoard; set => positionInBoard = value; }
-
-        /*Hacer sistema para que los tiles tengan su posición en el tablero
-        *Crear un Sistema con el que el material de las tiles cambia de acuerdo a las acciones del jugador.
-        */
 
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
 
@@ -41,10 +36,16 @@ namespace Checkers
             chipPlayer.playerChips.Add(this);
         }
 
-        public void EvolveFromChipToChecker(bool isEndline, PlayerNumber playerNumber)
+        /// <summary>
+        /// La ficha evoluciona a ser una dama
+        /// </summary>
+        /// <param name="isEndline">el booleano de la casilla a la que entró</param>
+        /// <param name="playerNumber">el número de jugador al que pertenece la casilla</param>
+        public void EvolveFromChipToChecker(Tile tileToCheck, PlayerNumber playerNumber)
         {
-            if (isEndline && playerNumber != chipPlayer.PlayerNumber)
-                IsChecker = true;
+            //La casilla es el final de la línea y no le pertenece al jugador de esta ficha
+            if (tileToCheck.IsEndline && playerNumber != chipPlayer.PlayerNumber)
+                IsChecker = true; //Se hace una dama
             
         }
 
@@ -125,6 +126,8 @@ namespace Checkers
                 if (!IndexIsOutOfRangeOrOccupied(indexesToCheck[3]))
                     AddToAvailableTiles(indexesToCheck[3]); //Se modifica el material del tile para indicarle al jugador cómo moverse
             }
+            //ToggleAvailableTiles(true);
+        
         }
 
         /// <summary>
@@ -153,6 +156,15 @@ namespace Checkers
                 return true;
             
             return false;
+        }
+
+        public void ToggleAvailableTiles(bool toggle)
+        {
+            foreach (var tile in availableTiles)
+            {
+                tile.Renderer.material.color
+                = toggle ? new Color(1, 0, 0) : tile.OriginalColor;
+            }
         }
 
         void MoveToTile()
