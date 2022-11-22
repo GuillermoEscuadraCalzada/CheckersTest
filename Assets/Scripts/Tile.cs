@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Checkers
 {
     public enum TileChipT { NONE, BLACK, WHITE, BLACK_KING, WHITE_KING}
-    public  delegate void OnChipMovement();
+    public delegate void OnChipMovement();
 
     public class Tile : MonoBehaviour
     {
@@ -16,6 +16,7 @@ namespace Checkers
         [SerializeField] PlayerNumber playerNumber = PlayerNumber.NONE;
         [SerializeField] Vector2Int positionInBoard;
         [SerializeField] bool isEndline;
+        public Color OriginalColor { get;  private set; }
 
         //Delegate para cuando una ficha entra en su collider
         OnChipMovement chipMovement;
@@ -25,10 +26,11 @@ namespace Checkers
         public TileChipT TileCheckerType => tileChipType;
         public Vector2Int PositionInBoard { get => positionInBoard; set => positionInBoard = value; }
         public Renderer Renderer { get => _renderer; }
-
+        public bool IsEndline => isEndline;
         private void Awake()
         {
             chipMovement = ChipMovesToTile;
+            OriginalColor= _renderer.material.color;
         }
 
         private void OnTriggerEnter(Collider other)
@@ -58,8 +60,8 @@ namespace Checkers
         }
 
         private void OnTriggerExit(Collider other) {
-            tileChipType = TileChipT.NONE;
-            CurrentChip= null;
+            CurrentChip = null;
+            chipMovement?.Invoke();
         }
 
         /// <summary>
@@ -67,12 +69,16 @@ namespace Checkers
         /// </summary>
         private void ChipMovesToTile()
         {
-            ///Se cambia el tipo de ficha 
-            ChangeTileType(CurrentChip.checkerColor, CurrentChip.IsChecker);
-            //La ficha evoluciona si es posible
-            CurrentChip.EvolveFromChipToChecker(isEndline, playerNumber);
-            CurrentChip.PositionInBoard = PositionInBoard;
-            CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType;
+            if (CurrentChip)
+            {
+                ///Se cambia el tipo de ficha 
+                ChangeTileType(CurrentChip.checkerColor, CurrentChip.IsChecker);
+                //La ficha evoluciona si es posible
+                CurrentChip.EvolveFromChipToChecker(this, playerNumber);
+                CurrentChip.PositionInBoard = PositionInBoard; //se actualiza posición de la ficha
+            }else 
+                tileChipType = TileChipT.NONE; //se cambia el tipo de la casilla
+            CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType; //se actualiza el valor en el tablero
         }
 
     }

@@ -1,10 +1,12 @@
-﻿using JetBrains.Annotations;
-using Unity.VisualScripting;
+﻿using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
+
+#if UNITY_EDITOR
 namespace Checkers
 {
+
     public class CheckersBoard : MonoBehaviour
     {
         public const int rows = 8; //Las filas totales 
@@ -28,26 +30,22 @@ namespace Checkers
         /// </summary>
         private void StartBoardIndexes()
         {
-            int i = 0; int j = 0;
             //Arreglo de 8x8 donde se guardarán temporalmente los objetos casilla del tablero
-
-            for(i = 0;i < rows;i++)
+            for (int i = 0;i < rows;i++)
             {
-                for(j = 0; j < cols; j++)
+                for(int j = 0; j < cols; j++)
                 {
                     Tile tileOfChild = rowsOfTilesFather.GetChild(i).GetChild(j).GetComponent<Tile>();
-                    BOARD_INDEXES[i,j] = 0; //Comienzan en un valor de cero
+                    BOARD_INDEXES[i, j] = 0; //Comienzan en un valor de cero
+                   
+                    if (!tileOfChild) continue; //la variable es nula
 
-                    if (!tileOfChild) continue;
-                    TilesArray[i, j] = tileOfChild;
-                    TilesArray[i, j].PositionInBoard = new Vector2Int(i, j);
-                    TilesArray[i, j].gameObject.name = $"Tile[{i},{j}]";
+                    TilesArray[i, j] = tileOfChild; //se guarda la referencia al componente
+                    TilesArray[i, j].PositionInBoard = new Vector2Int(i, j); //se crea una nueva posición para la casilla
                 }
             }
         }
 
-
-
-
     }
 }
+#endif
