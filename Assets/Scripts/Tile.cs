@@ -40,7 +40,7 @@ namespace Checkers
             CurrentChip = other.gameObject.GetComponent<Chip>();
             if(prevChip)
             {
-                Vector2Int newTile = CurrentChip.SkipEatenChipTile(prevChip.PositionInBoard);
+                Vector2Int newTile = CurrentChip.SkipEatenChipTile(prevChip.chipPosition.PositionInBoard);
                 Destroy(prevChip.gameObject);
                 CurrentChip.MoveToTile(CheckersBoard.TilesArray[newTile.x, newTile.y], false);
             }
@@ -83,7 +83,7 @@ namespace Checkers
                 ChangeTileType(CurrentChip.checkerColor, CurrentChip.IsChecker);
                 //Chip evolves to a Checker
                 CurrentChip.EvolveFromChipToChecker(this, playerNumber);
-                CurrentChip.PositionInBoard = PositionInBoard; //Updates chip position in board
+                CurrentChip.chipPosition.PositionInBoard = PositionInBoard; //Updates chip position in board
             }else 
                 tileChipType = TileChipT.NONE; //Changes tile type to NONE in case thereis no chip
             CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType; //Changes value of tile on the main board indexes
