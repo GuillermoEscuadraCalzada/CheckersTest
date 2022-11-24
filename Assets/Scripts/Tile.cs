@@ -9,8 +9,7 @@ namespace Checkers
 
     public class Tile : MonoBehaviour
     {
-        public static int TileLayer = 8;
-        //El tipo de la ficha
+        //Type of the tile
         [SerializeField] TileChipT tileChipType = TileChipT.NONE;
         [SerializeField] private Renderer _renderer;
         [SerializeField] PlayerNumber playerNumber = PlayerNumber.NONE;
@@ -35,25 +34,33 @@ namespace Checkers
 
         private void OnTriggerEnter(Collider other)
         {
+
+            Chip prevChip = CurrentChip;
+
             CurrentChip = other.gameObject.GetComponent<Chip>();
-            
+            if(prevChip)
+            {
+                Vector2Int newTile = CurrentChip.SkipEatenChipTile(prevChip.PositionInBoard);
+                Destroy(prevChip.gameObject);
+                CurrentChip.MoveToTile(CheckersBoard.TilesArray[newTile.x, newTile.y], false);
+            }
             chipMovement?.Invoke();
 
         }
 
         /// <summary>
-        /// Cambia el tipo de ficha que contiene la casilla
+        /// Changes tile type depending on the color of the chip and if it is a checker
         /// </summary>
-        /// <param name="chip_Color">El color de la ficha</param>
-        /// <param name="checkerIsKing">Si la casilla es dama o no</param>
+        /// <param name="chip_Color">Color of the chip</param>
+        /// <param name="checkerIsKing">Is a Chip or a Checker</param>
         private void ChangeTileType(Chip_Color chip_Color,bool checkerIsKing)
         {
             switch (chip_Color)
             {
-                case Chip_Color.WHITE:
+                case Chip_Color.WHITE: //Color white
                     tileChipType = checkerIsKing ? TileChipT.WHITE_KING : TileChipT.WHITE;
                     break;
-                case Chip_Color.BLACK:
+                case Chip_Color.BLACK: //Color black
                     tileChipType = checkerIsKing ? TileChipT.BLACK_KING : TileChipT.BLACK;
                     break;
             }
@@ -65,20 +72,21 @@ namespace Checkers
         }
 
         /// <summary>
-        /// Una nueva ficha entra a esta casilla
+        /// A new chip enters to this tile
         /// </summary>
         private void ChipMovesToTile()
         {
+            //CurrentChip is not null
             if (CurrentChip)
             {
-                ///Se cambia el tipo de ficha 
+                ///Change tile type with the checker type
                 ChangeTileType(CurrentChip.checkerColor, CurrentChip.IsChecker);
-                //La ficha evoluciona si es posible
+                //Chip evolves to a Checker
                 CurrentChip.EvolveFromChipToChecker(this, playerNumber);
-                CurrentChip.PositionInBoard = PositionInBoard; //se actualiza posición de la ficha
+                CurrentChip.PositionInBoard = PositionInBoard; //Updates chip position in board
             }else 
-                tileChipType = TileChipT.NONE; //se cambia el tipo de la casilla
-            CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType; //se actualiza el valor en el tablero
+                tileChipType = TileChipT.NONE; //Changes tile type to NONE in case thereis no chip
+            CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType; //Changes value of tile on the main board indexes
         }
 
     }
