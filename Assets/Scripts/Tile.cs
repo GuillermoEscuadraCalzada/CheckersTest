@@ -5,17 +5,17 @@ using UnityEngine;
 namespace Checkers
 {
     public enum TileChipT { NONE, BLACK, WHITE, BLACK_KING, WHITE_KING}
-    public  delegate void OnChipMovement();
+    public delegate void OnChipMovement();
 
     public class Tile : MonoBehaviour
     {
-        public static int TileLayer = 8;
-        //El tipo de la ficha
+        //Type of the tile
         [SerializeField] TileChipT tileChipType = TileChipT.NONE;
         [SerializeField] private Renderer _renderer;
         [SerializeField] PlayerNumber playerNumber = PlayerNumber.NONE;
         [SerializeField] Vector2Int positionInBoard;
         [SerializeField] bool isEndline;
+        public Color OriginalColor { get;  private set; }
 
         //Delegate para cuando una ficha entra en su collider
         OnChipMovement chipMovement;
@@ -25,61 +25,68 @@ namespace Checkers
         public TileChipT TileCheckerType => tileChipType;
         public Vector2Int PositionInBoard { get => positionInBoard; set => positionInBoard = value; }
         public Renderer Renderer { get => _renderer; }
-
+        public bool IsEndline => isEndline;
         private void Awake()
         {
             chipMovement = ChipMovesToTile;
+            OriginalColor= _renderer.material.color;
         }
 
         private void OnTriggerEnter(Collider other)
         {
+
+            Chip prevChip = CurrentChip;
+
             CurrentChip = other.gameObject.GetComponent<Chip>();
-            
+            if(prevChip)
+            {
+                Vector2Int newTile = CurrentChip.SkipEatenChipTile(prevChip.chipPosition.PositionInBoard);
+                Destroy(prevChip.gameObject);
+                CurrentChip.MoveToTile(CheckersBoard.TilesArray[newTile.x, newTile.y], false);
+            }
             chipMovement?.Invoke();
 
         }
 
         /// <summary>
-        /// Cambia el tipo de ficha que contiene la casilla
+        /// Changes tile type depending on the color of the chip and if it is a checker
         /// </summary>
-        /// <param name="chip_Color">El color de la ficha</param>
-        /// <param name="checkerIsKing">Si la casilla es dama o no</param>
+        /// <param name="chip_Color">Color of the chip</param>
+        /// <param name="checkerIsKing">Is a Chip or a Checker</param>
         private void ChangeTileType(Chip_Color chip_Color,bool checkerIsKing)
         {
             switch (chip_Color)
             {
-                case Chip_Color.WHITE:
+                case Chip_Color.WHITE: //Color white
                     tileChipType = checkerIsKing ? TileChipT.WHITE_KING : TileChipT.WHITE;
                     break;
-                case Chip_Color.BLACK:
+                case Chip_Color.BLACK: //Color black
                     tileChipType = checkerIsKing ? TileChipT.BLACK_KING : TileChipT.BLACK;
                     break;
             }
         }
 
         private void OnTriggerExit(Collider other) {
-            tileChipType = TileChipT.NONE;
             CurrentChip = null;
             chipMovement?.Invoke();
-            //CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType;
         }
 
         /// <summary>
-        /// Una nueva ficha entra a esta casilla
+        /// A new chip enters to this tile
         /// </summary>
         private void ChipMovesToTile()
         {
+            //CurrentChip is not null
             if (CurrentChip)
             {
-                ///Se cambia el tipo de ficha 
+                ///Change tile type with the checker type
                 ChangeTileType(CurrentChip.checkerColor, CurrentChip.IsChecker);
-                //La ficha evoluciona si es posible
-                CurrentChip.EvolveFromChipToChecker(isEndline, playerNumber);
-                CurrentChip.PositionInBoard = PositionInBoard;
-            }
-
-            CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType;
-
+                //Chip evolves to a Checker
+                CurrentChip.EvolveFromChipToChecker(this, playerNumber);
+                CurrentChip.chipPosition.PositionInBoard = PositionInBoard; //Updates chip position in board
+            }else 
+                tileChipType = TileChipT.NONE; //Changes tile type to NONE in case thereis no chip
+            CheckersBoard.BOARD_INDEXES[PositionInBoard.x, PositionInBoard.y] = (int)tileChipType; //Changes value of tile on the main board indexes
         }
 
     }
