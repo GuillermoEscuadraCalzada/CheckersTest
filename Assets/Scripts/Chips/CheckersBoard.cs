@@ -9,6 +9,12 @@ namespace Checkers
 
     public class CheckersBoard : MonoBehaviour
     {
+        [SerializeField] Player player1;
+        [SerializeField] Player player2;
+        [SerializeField] Player currentPlayer;
+        Player NextPlayer => currentPlayer == player1 ? player2 : player1;
+        Tile currentTile;
+
         public const int rows = 8; //Las filas totales 
         public const int cols = 8; //Las columnas totales
 
@@ -23,6 +29,55 @@ namespace Checkers
         private void Start()
         {
             StartBoardIndexes();
+            StartGame();
+        }
+
+        public void StartGame()
+        {
+            StartTurn(currentPlayer);
+        }
+
+        public void StartTurn(Player currentPlayer)
+        {
+            if (IsDraw())
+            {
+                //En caso de que ninguna ficha se pueda mover
+                EndGame();
+            }
+
+            //if (currentPlayer == player1)
+            //    currentPlayer = player2;
+
+            //else if (currentPlayer == player2)
+            //    currentPlayer = player1;
+            
+            //currentTile.ChipMovesToTile(); //Hacer público ChipMovesToTile
+            ChangePlayerTurn(); 
+        }
+
+        public void ChangePlayerTurn()
+        {
+            EndTurn(currentPlayer);  //Terminar turno actual
+            StartTurn(NextPlayer);    //Inicia nuevo turno
+        }
+
+        public void EndTurn(Player currentPlayer)
+        {
+            // Validar si alguno de los dos ha ganado
+                //Win condition
+            //
+        }
+
+        private bool IsDraw()
+        {
+            //Verificar que ya no haya movimientos posibles
+            return true;
+
+        }
+
+        public void EndGame()
+        {
+
         }
 
         /// <summary>
