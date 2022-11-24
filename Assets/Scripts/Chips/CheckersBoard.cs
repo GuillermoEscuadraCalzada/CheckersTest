@@ -12,16 +12,16 @@ namespace Checkers
         [SerializeField] Player player1;
         [SerializeField] Player player2;
         [SerializeField] Player currentPlayer;
-        Player NextPlayer => currentPlayer == player1 ? player2 : player1;
+        Player NextPlayer =>currentPlayer == player1 ? player2 : player1;
+
         Tile currentTile;
 
-        public const int rows = 8; //Las filas totales 
-        public const int cols = 8; //Las columnas totales
+        public const int rowsAndCols = 8; //Las filas totales 
 
         /*Por medio de un evento, actualizar los índices del tablero*/
-        public static int[,] BOARD_INDEXES = new int[rows, cols];
+        public static int[,] BOARD_INDEXES = new int[rowsAndCols, rowsAndCols];
         
-        public static Tile[,] TilesArray { get; private set; } = new Tile[rows, cols];
+        public static Tile[,] TilesArray { get; private set; } = new Tile[rowsAndCols, rowsAndCols];
 
         //El transform que guarda todas las filas del tablero.
         [SerializeField] private Transform rowsOfTilesFather;
@@ -34,7 +34,7 @@ namespace Checkers
 
         public void StartGame()
         {
-            StartTurn(currentPlayer);
+            //StartTurn(currentPlayer);
         }
 
         public void StartTurn(Player currentPlayer)
@@ -71,8 +71,7 @@ namespace Checkers
         private bool IsDraw()
         {
             //Verificar que ya no haya movimientos posibles
-            return true;
-
+            return false/*true*/;
         }
 
         public void EndGame()
@@ -86,9 +85,9 @@ namespace Checkers
         private void StartBoardIndexes()
         {
             //Arreglo de 8x8 donde se guardarán temporalmente los objetos casilla del tablero
-            for (int i = 0;i < rows;i++)
+            for (int i = 0;i < rowsAndCols;i++)
             {
-                for(int j = 0; j < cols; j++)
+                for(int j = 0; j < rowsAndCols; j++)
                 {
                     Tile tileOfChild = rowsOfTilesFather.GetChild(i).GetChild(j).GetComponent<Tile>();
                     BOARD_INDEXES[i, j] = 0; //Comienzan en un valor de cero

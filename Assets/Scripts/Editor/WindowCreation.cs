@@ -10,7 +10,7 @@ namespace CheckersEditor
 {
     public class WindowCreation : EditorWindow
     {
-        private CheckersBoard checkersBoard;
+        string arrayString = "";
 
         [MenuItem("BoardGameWindow/Checkers")]
         public static void OpenCheckersWindow()
@@ -21,24 +21,16 @@ namespace CheckersEditor
 
         private void OnGUI()
         {
-            EditorGUILayout.BeginHorizontal();            
-            GUILayout.Label("BoardToCheck", EditorStyles.boldLabel);
-            checkersBoard = (CheckersBoard)EditorGUILayout.ObjectField(checkersBoard, typeof(CheckersBoard), true);
-            EditorGUILayout.EndHorizontal();
-
-            PrinteBoardIndexes();
-
-            
+            PrinteBoardIndexes();           
         }
 
         private void PrinteBoardIndexes()
         {
             
-                string arrayString = "";
-            for (int i = 0; i < CheckersBoard.rows; i++)
+            for (int i = 0; i < CheckersBoard.rowsAndCols; i++)
             {
                 arrayString = "";
-                for (int j = 0; j < CheckersBoard.cols; j++)
+                for (int j = 0; j < CheckersBoard.rowsAndCols; j++)
                 {
                     arrayString += string.Format("{0}       ",CheckersBoard.BOARD_INDEXES[i, j]);
                 }

@@ -6565,6 +6565,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de3b5668687595748ac7560884264964, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  player1: {fileID: 1602947289}
+  player2: {fileID: 450483349}
+  currentPlayer: {fileID: 1602947289}
   rowsOfTilesFather: {fileID: 1497197613}
 --- !u!23 &4001882105801520042
 MeshRenderer:

@@ -22,13 +22,12 @@ namespace Checkers
 
         public ChipPosition chipPosition;
 
-        private Vector2Int[] indexesToCheck = null;
 
         public Color OriginalColor { get; private set; }
 
         public bool HasBeenSelected { get; set; }
 
-        private List<Tile> availableTiles = new List<Tile>(4);
+        private readonly List<Tile> availableTiles = new List<Tile>(4);
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
 
         public int ChipPlayerValue => (int)chipPlayer.PlayerNumber;
@@ -42,77 +41,79 @@ namespace Checkers
         }
 
         /// <summary>
-        /// La ficha evoluciona a ser una dama
+        /// Chip evolves to a checker
         /// </summary>
-        /// <param name="isEndline">el booleano de la casilla a la que entró</param>
-        /// <param name="playerNumber">el número de jugador al que pertenece la casilla</param>
+        /// <param name="tileToCheck">The tile that will be evaluated</param>
+        /// <param name="playerNumber">The number of the player the tile belongs to</param>
         public void EvolveFromChipToChecker(Tile tileToCheck, PlayerNumber playerNumber)
         {
-            //La casilla es el final de la línea y no le pertenece al jugador de esta ficha
             if (tileToCheck.IsEndline && playerNumber != chipPlayer.PlayerNumber)
-                IsChecker = true; //Se hace una dama
-            
+                IsChecker = true;
         }
+           
 
         /// <summary>
-        /// Se realiza una búsqueda con el arreglo del tablero para saber qué posiciones puede utilizar cada ficha.
+        ///Searches for the available tiles for this chip
         /// </summary>
         public void AvailableTilesToMove()
         {
-            availableTiles.Clear();
+            availableTiles.Clear(); //clears any possible available tile for this chip
 
-            /*Hacer variable privada para que sea accedida en otra función y checar manualmente cada caso*/
-            //Se pregunta si es el jugador uno
-            indexesToCheck = new Vector2Int[4]
-            {
+            //Creates an array with all 4 corners of this chip
+            Vector2Int[]indexesToCheck = new Vector2Int[4] {
                 chipPosition.Upper_Left(),
                 chipPosition.Upper_Right(),
                 chipPosition.Lower_Left(),
                 chipPosition.Lower_Right()
             };
 
+            ///Iterates through all 4 corners
             for (int i = 0; i < 4; i++)
             {
+                //Checks if the chip player is the second one and if it is a checker, to avoid going to the upper left and right corners
                 if (i < 2 && chipPlayer.PlayerNumber == PlayerNumber.TWO && !IsChecker) continue;
+                //Checks if the chip player is the first one and if it is a checker, to avoid going to the lower left and right corners
                 else if (i == 2 && chipPlayer.PlayerNumber == PlayerNumber.ONE && !IsChecker) break;
 
-                //EnemyChipCanBeDestroyed(indexesToCheck[0], indexesToCheck);
-                //Se pregunta si la posición está dentro de los rangos del tablero
-                if (!IndexIsOutOfRangeOrOccupied(indexesToCheck[i])) 
-                    availableTiles.Add(CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y]);
-                //Se modifica el material del tile para indicarle al jugador cómo moverse
+                //Checks if the indicated tile is available
+                if (!CheckTileAvailabilty(indexesToCheck[i])) 
+                    availableTiles.Add(CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y]); //Adds tile to the chip list
             }
         }
 
 
         /// <summary>
-        /// Se revisa si los índices indicados en el tablero están ocupados por fichas del mismo color <br></br>
-        /// o si están fuera del rango del arreglo
+        /// Checks if the tile position is out of bounds, if it can be eaten or if is occupied by another chip of the same player
         /// </summary>
-        /// <param name="x">la fila donde se encuentra la ficha</param>
-        /// <param name="y">la columna donde se encuentra la ficha</param>
-        /// <returns>regresa verdadero si se encuentra fuera de rango o si hay una ficha del mismo color</returns>
-        private bool IndexIsOutOfRangeOrOccupied(Vector2Int position)
+        /// <param name="tilePosition">The position of the tile that will be checked</param>
+        /// <returns>Returns true if the index is having an issue, returns false if the index is accesible</returns>
+        private bool CheckTileAvailabilty(Vector2Int tilePosition)
         {
-            //se revisa si la posición de la ficha está fuera de rango
-            if (PositionOutOfBounds(position)) return true;
-            //se revisa si la casilla del tablero tiene ficha y en caso de que sí, se comparan colores.
-            else if (CheckersBoard.TilesArray[position.x, position.y].CurrentChip &&
-                (CheckersBoard.TilesArray[position.x, position.y].CurrentChip.checkerColor
+            //Checks index out of bounds
+            if (PositionOutOfBounds(tilePosition)) return true;
+            //checks if the checking chip is the same color as the one the tile has
+            else if (CheckersBoard.TilesArray[tilePosition.x, tilePosition.y].CurrentChip &&
+                (CheckersBoard.TilesArray[tilePosition.x, tilePosition.y].CurrentChip.checkerColor
                 == checkerColor))
                 return true;
-            else if (CheckersBoard.TilesArray[position.x, position.y].CurrentChip &&
-                (CheckersBoard.TilesArray[position.x, position.y].CurrentChip.checkerColor
+            //Checks if the chip of the tile can be eaten
+            else if (CheckersBoard.TilesArray[tilePosition.x, tilePosition.y].CurrentChip &&
+                (CheckersBoard.TilesArray[tilePosition.x, tilePosition.y].CurrentChip.checkerColor
                 != checkerColor))
             {
-                return EnemyChipCantBeDestroyed(position);
+                return EnemyChipCantBeDestroyed(tilePosition);
             }
             return false;
         }
 
+        /// <summary>
+        /// Checks if parameter position is out of bounds 
+        /// </summary>
+        /// <param name="position">The position that will be checked</param>
+        /// <returns>Returns true if the position is out of bounds</returns>
         private bool PositionOutOfBounds(Vector2Int position)
         {
-            return (position.x < 0 || position.x > CheckersBoard.rows - 1) || (position.y < 0 || position.y > CheckersBoard.cols - 1);
+            return (position.x < 0 || position.x > CheckersBoard.rowsAndCols - 1) || (position.y < 0 || position.y > CheckersBoard.rowsAndCols - 1);
         }
 
         /// <summary>
@@ -123,41 +124,42 @@ namespace Checkers
         /// <returns></returns>
         public bool EnemyChipCantBeDestroyed(Vector2Int selectedTilePosition )
         {
-            //Creates a double array foreach 
+            //Creates a temporal Vector2Int
+            Vector2Int res;
 
-            Vector2Int res = new Vector2Int();
+            //Switches the selected position through the 4 corners of the chip Position
             switch (selectedTilePosition)
             {
+                //The selected tile is on the upper left corner
                 case Vector2Int v when v.Equals(chipPosition.Upper_Left()):
-                    print("Tile is upper Left");
-                    res = chipPosition.Upper_Left(v);
-                    if (PositionOutOfBounds(res) )return true;
-                    if (CheckersBoard.BOARD_INDEXES[res.x, res.y] != 0)
+                    res = ChipPosition.GetChipUpperLeftTile(v); //Gets upper left tile of selectedTilePosition
+                    //Checks if position is out of bounds or different to 0
+                    if (PositionOutOfBounds(res)||CheckersBoard.BOARD_INDEXES[res.x, res.y] != 0)
                         return true;
                     break;
+                //The selected tile is on the upper right corner
                 case Vector2Int v when v.Equals(chipPosition.Upper_Right()):
-                    print("Tile is upper Right");
-                    res = chipPosition.Upper_Right(v);
-                    if (PositionOutOfBounds(res) )return PositionOutOfBounds(res);
-                    if (CheckersBoard.BOARD_INDEXES[res.x,res.y] != 0)
+                    res = ChipPosition.GetChipUpperRightTile(v);//Gets upper right tile of selectedTilePosition
+                    //Checks if position is out of bounds or different to 0
+                    if (PositionOutOfBounds(res) || CheckersBoard.BOARD_INDEXES[res.x, res.y] != 0)
                         return true;
                     break;
+                //The selected tile is on the lower left corner
                 case Vector2Int v when v.Equals(chipPosition.Lower_Left()):
-                    print("Tile is lower Left");
-                    res = chipPosition.Lower_Left(v);
-                    if (PositionOutOfBounds(res) )return PositionOutOfBounds(res);
-                    if (CheckersBoard.BOARD_INDEXES[res.x, res.y] != 0)
+                    res = ChipPosition.GetChipLowerLeftTile(v);//Gets lower left tile of selectedTilePosition
+                    //Checks if position is out of bounds or different to 0
+                    if (PositionOutOfBounds(res) || CheckersBoard.BOARD_INDEXES[res.x, res.y] != 0)
                         return true;
                     break;
+                //The selected tile is on the lower right corner
                 case Vector2Int v when v.Equals(chipPosition.Lower_Right()):
-                    print("Tile is lower Right");
-                    res = chipPosition.Lower_Right(v);
-                    if (PositionOutOfBounds(res)) return PositionOutOfBounds(res);
-                    if (CheckersBoard.BOARD_INDEXES[res.x, res.y] != 0)
+                    res = ChipPosition.GetChipLowerRightTile(v);//Gets lower right tile of selectedTilePosition
+                    //Checks if position is out of bounds or different to 0
+                    if (PositionOutOfBounds(res) || CheckersBoard.BOARD_INDEXES[res.x, res.y] != 0)
                         return true;
                     break;
             }
-            return false; //Returns false, can't eat enemy chip
+            return false; //Returns false, can eat enemy chip
         }
 
         /// <summary>
@@ -192,82 +194,42 @@ namespace Checkers
             availableTiles.Clear(); //Clears the tiles available for the chip
         }
 
+        /// <summary>
+        /// Skips the tile of the eaten chip and moves to the next one in the moving chip direction.
+        /// </summary>
+        /// <param name="eatenChipPositionInBoard">The position of the chip that is being eaten</param>
+        /// <returns>Returns the position of the next tile the moving chip will end on after eating a chip</returns>
         public Vector2Int SkipEatenChipTile(Vector2Int eatenChipPositionInBoard)
         {
-
-            //Vector2Int v =new Vector2Int();
-
+            //Switches the position of the eaten chip with the 4 corners of the moving chip
             switch (eatenChipPositionInBoard)
             {
+                //The eating chip is on the upper left corner
                 case Vector2Int v when v.Equals(chipPosition.Upper_Left()):
-                    if (!PositionOutOfBounds(v = chipPosition.Upper_Left(v)))
-                        return v;
+                    //Checks if the position that should be next is not out of bounds
+                    if (!PositionOutOfBounds(v = ChipPosition.GetChipUpperLeftTile(v)))
+                        return  v;
                     break;
+                //The eating chip is on the upper right corner
                 case Vector2Int v when v.Equals(chipPosition.Upper_Right()):
-                    if (!PositionOutOfBounds(v = chipPosition.Upper_Right(v)))
+                    //Checks if the position that should be next is not out of bounds
+                    if (!PositionOutOfBounds(v = ChipPosition.GetChipUpperRightTile(v)))
                         return v;
                     break;
+                //The eating chip is on the lower left corner
                 case Vector2Int v when v.Equals(chipPosition.Lower_Left()):
-                    if (!PositionOutOfBounds(v =chipPosition.Lower_Left(v)))
+                    //Checks if the position that should be next is not out of bounds
+                    if (!PositionOutOfBounds(v = ChipPosition.GetChipLowerLeftTile(v)))
                         return v;
                     break;
+                //The eating chip is on the lower right corner
                 case Vector2Int v when v.Equals(chipPosition.Lower_Right()):
-                    if (!PositionOutOfBounds(v =chipPosition.Lower_Right(v)))
+                    //Checks if the position that should be next is not out of bounds
+                    if (!PositionOutOfBounds(v = ChipPosition.GetChipLowerRightTile(v)))
                         return v;
                     break;
             }
-
-
-            //if (chipPlayer.PlayerNumber == PlayerNumber.ONE)
-            //{
-            //    if(eatenChipPositionInBoard == indexesToCheck[0] && 
-            //        !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x - 1, eatenChipPositionInBoard.y - 1)))
-            //    {
-            //        return v;
-            //    }
-            //    else if (eatenChipPositionInBoard == indexesToCheck[1] &&
-            //        !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x - 1, eatenChipPositionInBoard.y + 1)))
-            //    {
-            //        return v;
-            //    }
-            //    else if (eatenChipPositionInBoard == indexesToCheck[2] &&
-            //        !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x + 1, eatenChipPositionInBoard.y - 1)))
-            //    {
-            //        return v;
-            //    }
-            //    else if (eatenChipPositionInBoard == indexesToCheck[3]
-            //        && !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x + 1, eatenChipPositionInBoard.y + 1)))
-            //    {
-            //        return v;
-            //    }
-
-            //}
-            //else if(chipPlayer.PlayerNumber == PlayerNumber.TWO)
-            //{
-            //    if (eatenChipPositionInBoard == indexesToCheck[0] &&
-            //        !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x + 1, eatenChipPositionInBoard.y - 1)))
-            //    {
-            //        return v;
-            //    }
-            //    else if (eatenChipPositionInBoard == indexesToCheck[1] &&
-            //        !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x + 1, eatenChipPositionInBoard.y - 1)))
-            //    {
-            //        return v;
-            //    }
-            //    else if (eatenChipPositionInBoard == indexesToCheck[3] &&
-            //        !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x + 1, eatenChipPositionInBoard.y - 1)))
-            //    {
-            //        return v;
-            //    }
-            //    else if (eatenChipPositionInBoard == indexesToCheck[4] &&
-            //        !PositionOutOfBounds(v = new Vector2Int(eatenChipPositionInBoard.x + 1, eatenChipPositionInBoard.y - 1)))
-            //    {
-            //        return v;
-            //    }
-            //}
             return eatenChipPositionInBoard;
         }
-
-
     }
 }
