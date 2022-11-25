@@ -1,9 +1,9 @@
 ﻿using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
-
-#if UNITY_EDITOR
 namespace Checkers
 {
 
@@ -12,22 +12,30 @@ namespace Checkers
         [SerializeField] Player player1;
         [SerializeField] Player player2;
         [SerializeField] Player currentPlayer;
-        Player NextPlayer => currentPlayer == player1 ? player2 : player1;
-        Tile currentTile;
-
-        public const int rows = 8; //Las filas totales 
-        public const int cols = 8; //Las columnas totales
-
-        /*Por medio de un evento, actualizar los índices del tablero*/
-        public static int[,] BOARD_INDEXES = new int[rows, cols];
-        
-        public static Tile[,] TilesArray { get; private set; } = new Tile[rows, cols];
-
-        //El transform que guarda todas las filas del tablero.
         [SerializeField] private Transform rowsOfTilesFather;
 
-        private void Start()
+        public const int rowsAndCols = 8; //Las filas totales 
+
+        /*Por medio de un evento, actualizar los índices del tablero*/
+        public static int[,] BOARD_INDEXES = new int[rowsAndCols, rowsAndCols];
+        
+        public static Tile[,] TilesArray { get; private set; } = new Tile[rowsAndCols, rowsAndCols];
+
+        public static CheckersBoard Instance;
+
+        public Player CurrentPlayer => currentPlayer; 
+
+        Player NextPlayer => currentPlayer = currentPlayer == player1 ? player2 : player1;
+
+
+        //El transform que guarda todas las filas del tablero.
+
+        private void Awake()
         {
+            if(Instance == null)
+            {
+                Instance = this;
+            }
             StartBoardIndexes();
             StartGame();
         }
@@ -39,40 +47,84 @@ namespace Checkers
 
         public void StartTurn(Player currentPlayer)
         {
-            if (IsDraw())
-            {
-                //En caso de que ninguna ficha se pueda mover
-                EndGame();
-            }
-
-            //if (currentPlayer == player1)
-            //    currentPlayer = player2;
-
-            //else if (currentPlayer == player2)
-            //    currentPlayer = player1;
-            
-            //currentTile.ChipMovesToTile(); //Hacer público ChipMovesToTile
-            ChangePlayerTurn(); 
+            currentPlayer.ToggleMobilityOfChips();
+            //ChangePlayerTurn(); 
         }
 
         public void ChangePlayerTurn()
         {
             EndTurn(currentPlayer);  //Terminar turno actual
-            StartTurn(NextPlayer);    //Inicia nuevo turno
+            StartTurn(NextPlayer);  //Inicia nuevo turno
         }
 
         public void EndTurn(Player currentPlayer)
         {
-            // Validar si alguno de los dos ha ganado
-                //Win condition
-            //
+            if (IsDraw()|| SomePlayerHasNoMoreMoves () || SomePlayerHasEatenAllEnemyChips())
+            {
+                EndGame();
+            }
+        }
+        void CheckForPlayerPosibleMoves(List<Chip> list, ref int globalMoves)
+        { 
+            
+            foreach (var chip in list)
+            {
+                chip.AvailableTilesToMove();
+                if (chip.AvailableTiles.Count > 0) 
+                    globalMoves++;
+            }
+            
         }
 
         private bool IsDraw()
         {
+            int globalAvailableMoves = 0;
+            CheckForPlayerPosibleMoves(player1.playerChips, ref globalAvailableMoves);
+            CheckForPlayerPosibleMoves(player2.playerChips, ref globalAvailableMoves);
+            if(globalAvailableMoves == 0)
+            {
+                string s = player1.playerChips.Count > player2.playerChips.Count ? "Player 1 wins" : "Player 2 wins";
+                print(s);
+            }
             //Verificar que ya no haya movimientos posibles
-            return true;
+            return globalAvailableMoves == 0;
+        }
 
+        private bool SomePlayerHasNoMoreMoves()
+        {
+            if (player1.playerChips.Count == 0 || player2.playerChips.Count == 0) return false;
+            int playerOneMoves = 0, playerTwoMoves = 0;
+            string s = "";
+            CheckForPlayerPosibleMoves(player1.playerChips, ref playerOneMoves);
+            CheckForPlayerPosibleMoves(player2.playerChips, ref playerTwoMoves);
+            if (playerOneMoves == 0)
+            {
+                s = "PlayerTwo Wins";
+                print(s);
+                return true;
+            }
+            else if (playerTwoMoves == 0)
+            {
+                s = "Player One Wins";
+                print(s);
+                return true;
+            }
+            return false;
+        }
+
+        private bool SomePlayerHasEatenAllEnemyChips()
+        {
+            if (player1.playerChips.Count == 0)
+            {
+                print("Player 2 Wins");
+                return true;
+            }
+            else if (player2.playerChips.Count == 0)
+            {
+                print("Player 1 Wins");
+                return true;
+            }
+            return false;
         }
 
         public void EndGame()
@@ -86,9 +138,9 @@ namespace Checkers
         private void StartBoardIndexes()
         {
             //Arreglo de 8x8 donde se guardarán temporalmente los objetos casilla del tablero
-            for (int i = 0;i < rows;i++)
+            for (int i = 0;i < rowsAndCols;i++)
             {
-                for(int j = 0; j < cols; j++)
+                for(int j = 0; j < rowsAndCols; j++)
                 {
                     Tile tileOfChild = rowsOfTilesFather.GetChild(i).GetChild(j).GetComponent<Tile>();
                     BOARD_INDEXES[i, j] = 0; //Comienzan en un valor de cero
@@ -103,4 +155,3 @@ namespace Checkers
 
     }
 }
-#endif
