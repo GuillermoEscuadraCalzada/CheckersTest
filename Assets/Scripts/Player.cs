@@ -11,12 +11,9 @@ namespace Checkers
 
         [SerializeField] PlayerNumber playerNumber;
 
-        public Chip SelectedChip { get; set; }
-
         public List<Chip> playerChips = new List<Chip>(MaxPlayerChips);
+        public Chip SelectedChip { get; set; }
+        public bool IsPlayerTurn { get; set; }
         public PlayerNumber PlayerNumber => playerNumber;
-
-
-
     }
 }

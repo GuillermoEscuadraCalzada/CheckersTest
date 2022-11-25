@@ -20,24 +20,28 @@ namespace Checkers
         [SerializeField] Vector2Int positionInBoard; //Position of chip on the board 2D array 
         [SerializeField] Player chipPlayer; //Player Reference
 
-        public ChipPosition chipPosition;
+        public ChipPosition chipPosition = new();
 
 
         public Color OriginalColor { get; private set; }
 
         public bool HasBeenSelected { get; set; }
 
-        private readonly List<Tile> availableTiles = new List<Tile>(4);
+        public readonly List<Tile> availableTiles = new List<Tile>(4);
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
 
         public int ChipPlayerValue => (int)chipPlayer.PlayerNumber;
 
 
-        private void Awake()
+        private void Start()
         {
-            chipPosition = new ChipPosition();
             OriginalColor = GetComponent<Renderer>().material.color;
             chipPlayer.playerChips.Add(this);
+        }
+
+        private void OnDestroy()
+        {
+            chipPlayer.playerChips.Remove(this);
         }
 
         /// <summary>
@@ -80,7 +84,6 @@ namespace Checkers
                     availableTiles.Add(CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y]); //Adds tile to the chip list
             }
         }
-
 
         /// <summary>
         /// Checks if the tile position is out of bounds, if it can be eaten or if is occupied by another chip of the same player
@@ -192,6 +195,7 @@ namespace Checkers
             //Moves the position of the chip to the tile, conserving Y position
             transform.position = new(tileToMove.transform.position.x, transform.position.y, tileToMove.transform.position.z);
             availableTiles.Clear(); //Clears the tiles available for the chip
+            
         }
 
         /// <summary>
