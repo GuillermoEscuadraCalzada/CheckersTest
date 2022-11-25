@@ -24,6 +24,7 @@ namespace CheckersEditor
 
         private void OnGUI()
         {
+
             EditorGUILayout.BeginHorizontal();
             player1 = (GameObject)EditorGUILayout.ObjectField(player1, typeof(GameObject), true);
             EditorGUILayout.EndHorizontal();
@@ -32,16 +33,16 @@ namespace CheckersEditor
             player2 = (GameObject)EditorGUILayout.ObjectField(player2, typeof(GameObject), true);
             EditorGUILayout.EndHorizontal();
 
-            //EditorUtility.SetDirty(player1);
-            //EditorUtility.SetDirty(player2);
             PrinteBoardIndexes();
-            PlayerChipsCount(player1.GetComponent<Player>());
-            PlayerChipsCount(player2.GetComponent<Player>());
+
+            PlayerChipsCount(player: player1? player1.GetComponent<Player>(): null);
+            PlayerChipsCount(player: player2? player2.GetComponent<Player>(): null);
         }
 
         private void OnInspectorUpdate()
         {
-            //Repaint();
+            
+            Repaint();
         }
 
         private void PrinteBoardIndexes()
@@ -67,8 +68,6 @@ namespace CheckersEditor
             else
                 EditorGUILayout.LabelField("Missing a player script");
         }
-
-
     }
 #endif
 }

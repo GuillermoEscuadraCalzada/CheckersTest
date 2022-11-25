@@ -7,7 +7,14 @@ namespace Checkers
     public class CameraChipSelection : MonoBehaviour
     {
         private GameObject currentHovered; //The current hovered object
-        private Chip currentSelectedChip; //The current selected chip
+
+        CheckersBoard checkersBoard; //A reference to the instance of the checkers board
+
+        private void Start()
+        {
+            checkersBoard = CheckersBoard.Instance; //Gets the instance of the board
+        }
+
         private void LateUpdate()
         {
             OnHoverEnter();
@@ -20,14 +27,17 @@ namespace Checkers
         /// </summary>
         private void OnHoverEnter()
         {
+
             //Creates a ray from mouse position in camera
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            //Checks a detection of a raycast if a ray passes through a chip
-            if (Physics.Raycast(ray, out RaycastHit raycast, 100.0f, 1 << Chip.ChipLayer))
+            //Checks a detection of a raycast if a ray passes through a chip and belongs to the currentPlayer number
+            if (Physics.Raycast(ray, out RaycastHit raycast, 100.0f, 1 << Chip.ChipLayer) 
+                && raycast.transform.GetComponent<Chip>().ChipPlayerValue == checkersBoard.CurrentPlayer.PlayerNumber)
             {
                 //Current chip is the same the mouse is pointing at
-                if (currentSelectedChip == raycast.transform.GetComponent<Chip>()) return;
+                if (checkersBoard.CurrentPlayer.SelectedChip == raycast.transform.GetComponent<Chip>())
+                    return;
                 currentHovered = raycast.transform.gameObject; //Gets game object of raycast target
                 if (!currentHovered.GetComponent<Chip>()) return; //Target doesn't has a chip component
                 currentHovered.GetComponent<Renderer>().material.color = new Color(0, 1, 0); //Change color of hovered chip
@@ -35,10 +45,11 @@ namespace Checkers
             else
             { //No chip has mouse over it
                 //current hovered is null or chip component equals to selected chip
-                if (currentHovered == null|| currentHovered.GetComponent<Chip>() == currentSelectedChip) return;
+                if (currentHovered == null|| currentHovered.GetComponent<Chip>() == checkersBoard.CurrentPlayer.SelectedChip)
+                    return;
                 //current hovered color returns to original.
                 currentHovered.GetComponent<Renderer>().material.color = currentHovered.GetComponent<Chip>().OriginalColor;
-                currentHovered = null; 
+                currentHovered = null; //sets hovered to null
             }
         }
         
@@ -47,13 +58,21 @@ namespace Checkers
         /// </summary>
         private void ClickChip()
         {
-            if (!Input.GetMouseButtonDown(0)) return; //el jugador no presiona el click izquierdo  (por ahora)
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); //Se crea un nuevo rayo a partir de su posición en la cámara
-            //Se crea un raycast con una gran distancia.
-            if (Physics.Raycast(ray, out RaycastHit raycast, 1000.0f))
+            if (!Input.GetMouseButtonDown(0)) return; //Player didn't press left click
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); //Creates new ray from mouse position in camera space
+            Chip currentSelectedChip = checkersBoard.CurrentPlayer.SelectedChip; //gets selected chip of currentPlayer
+
+            if (Physics.Raycast(ray, out RaycastHit raycast))
             {
-                //Se detecta que el objeto no tiene un componente de ficha o que el layer del objeto es de una casilla
-                if (!raycast.transform.GetComponent<Chip>() || !raycast.collider.CompareTag("Chip")) return;
+                Chip raycastChip = raycast.transform.GetComponent<Chip>();
+                
+                //Checks if the raycast detected a chip and if the chip belongs to the currentPlayer
+                if (!raycastChip || !raycast.collider.CompareTag("Chip") 
+                    || raycastChip.ChipPlayerValue != checkersBoard.CurrentPlayer.PlayerNumber
+                    || !raycastChip.CanMove)
+                    return;
+
                 //Object game object is different to current selected chip
                 if (raycast.transform.gameObject != currentSelectedChip)
                 {
@@ -63,8 +82,8 @@ namespace Checkers
                         //Material's color returns to original color
                         currentSelectedChip.GetComponent<Renderer>().material.color = currentSelectedChip.GetComponent<Chip>().OriginalColor;
                         currentSelectedChip.ToggleAvailableTiles(false); //Turns off available tiles for this chip
-                    } 
-                    currentSelectedChip = raycast.transform.GetComponent<Chip>();
+                    }
+                    checkersBoard.CurrentPlayer.SelectedChip = currentSelectedChip = raycastChip;                  
                     currentSelectedChip.GetComponent<Renderer>().material.color = currentSelectedChip.GetComponent<Chip>().OriginalColor; 
                     currentSelectedChip.AvailableTilesToMove();
                     currentSelectedChip.ToggleAvailableTiles(true); //Turns off available tiles for this chip
@@ -83,12 +102,13 @@ namespace Checkers
         /// </summary>
         private void TileSelection()
         {
-            if(!Input.GetMouseButtonDown(0) || !currentSelectedChip) return;
+            if(!Input.GetMouseButtonDown(0) || !checkersBoard.CurrentPlayer.SelectedChip) return;
             ///Creates a new ray from the position of the mouse
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Chip currentSelectedChip = checkersBoard.CurrentPlayer.SelectedChip;
 
             //Checks a detection of a raycast if a ray passes through a chip
-            if (Physics.Raycast(ray, out RaycastHit raycast/*, 100.0f*/))
+            if (Physics.Raycast(ray, out RaycastHit raycast))
             { 
                 if(!currentSelectedChip|| !raycast.transform.GetComponent<Tile>() || !raycast.collider.CompareTag("Tile")) return; //there is no currentSelectedChip, therefore, can't select tile to move
                 currentSelectedChip.ToggleAvailableTiles(false);

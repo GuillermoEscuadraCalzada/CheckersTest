@@ -17,7 +17,6 @@ namespace Checkers
         public static int ChipLayer = 6;
         public Chip_Color checkerColor; //Chip color
         [SerializeField] bool isChecker; //Is a checker or normal chip
-        [SerializeField] Vector2Int positionInBoard; //Position of chip on the board 2D array 
         [SerializeField] Player chipPlayer; //Player Reference
 
         public ChipPosition chipPosition = new();
@@ -25,15 +24,16 @@ namespace Checkers
 
         public Color OriginalColor { get; private set; }
 
-        public bool HasBeenSelected { get; set; }
+        public bool CanMove { get; set; } = false;
 
-        public readonly List<Tile> availableTiles = new List<Tile>(4);
+        public List<Tile> AvailableTiles { get; } = new(4);
+        public List<Chip> PosibleChipsToEat { get; } = new(4);
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
 
-        public int ChipPlayerValue => (int)chipPlayer.PlayerNumber;
+        public int ChipPlayerValue => chipPlayer.PlayerNumber;
+        public Player ChipPlayer => chipPlayer;
 
-
-        private void Start()
+        private void Awake()
         {
             OriginalColor = GetComponent<Renderer>().material.color;
             chipPlayer.playerChips.Add(this);
@@ -51,7 +51,7 @@ namespace Checkers
         /// <param name="playerNumber">The number of the player the tile belongs to</param>
         public void EvolveFromChipToChecker(Tile tileToCheck, PlayerNumber playerNumber)
         {
-            if (tileToCheck.IsEndline && playerNumber != chipPlayer.PlayerNumber)
+            if (tileToCheck.IsEndline && (int)playerNumber != chipPlayer.PlayerNumber)
                 IsChecker = true;
         }
            
@@ -61,8 +61,8 @@ namespace Checkers
         /// </summary>
         public void AvailableTilesToMove()
         {
-            availableTiles.Clear(); //clears any possible available tile for this chip
-
+            AvailableTiles.Clear(); //clears any possible available tile for this chip
+            PosibleChipsToEat.Clear();
             //Creates an array with all 4 corners of this chip
             Vector2Int[]indexesToCheck = new Vector2Int[4] {
                 chipPosition.Upper_Left(),
@@ -75,13 +75,19 @@ namespace Checkers
             for (int i = 0; i < 4; i++)
             {
                 //Checks if the chip player is the second one and if it is a checker, to avoid going to the upper left and right corners
-                if (i < 2 && chipPlayer.PlayerNumber == PlayerNumber.TWO && !IsChecker) continue;
+                if (i < 2 && chipPlayer.PlayerNumber == (int)PlayerNumber.TWO && !IsChecker) continue;
                 //Checks if the chip player is the first one and if it is a checker, to avoid going to the lower left and right corners
-                else if (i == 2 && chipPlayer.PlayerNumber == PlayerNumber.ONE && !IsChecker) break;
+                else if (i == 2 && chipPlayer.PlayerNumber == (int)PlayerNumber.ONE && !IsChecker) break;
 
                 //Checks if the indicated tile is available
-                if (!CheckTileAvailabilty(indexesToCheck[i])) 
-                    availableTiles.Add(CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y]); //Adds tile to the chip list
+                if (!CheckTileAvailabilty(indexesToCheck[i]))
+                {
+                    //Adds tile to the chip list
+                    AvailableTiles.Add(CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y]);
+                    Chip tileChip = CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y].CurrentChip;
+                    if (tileChip) PosibleChipsToEat.Add(tileChip);
+
+                }
             }
         }
 
@@ -172,7 +178,7 @@ namespace Checkers
         public void ToggleAvailableTiles(bool toggle)
         {
             //Iterates through every available tile
-            foreach (var tile in availableTiles)
+            foreach (var tile in AvailableTiles)
             {
                 //Changes renderer color for this tile material
                 tile.Renderer.material.color
@@ -190,12 +196,42 @@ namespace Checkers
             //Looks for the tile on the list of tiles from this chip
             Tile foundTile = tileToMove;
             if (searchOnList)
-                foundTile = availableTiles.Find(x => x == tileToMove);
+                foundTile = AvailableTiles.Find(x => x == tileToMove);
             if (!foundTile) return; //Return if tile is null
+
+            Chip prevChip = tileToMove.CurrentChip;
+            if (prevChip)
+            {
+                Vector2Int newTile = SkipEatenChipTile(prevChip.chipPosition.PositionInBoard);
+                Destroy(prevChip.gameObject);
+                transform.position = 
+                    new
+                    (CheckersBoard.TilesArray[newTile.x, newTile.y].transform.position.x, 
+                    transform.position.y, 
+                    CheckersBoard.TilesArray[newTile.x, newTile.y].transform.position.z);
+
+
+                chipPosition.PositionInBoard = new Vector2Int(newTile.x, newTile.y);
+                //MoveToTile(CheckersBoard.TilesArray[newTile.x, newTile.y], false);
+                AvailableTilesToMove();
+                if (PosibleChipsToEat.Count == 0)
+                {
+                    CheckersBoard.Instance.ChangePlayerTurn();
+                }
+                else
+                {
+                    print("Moved Chip has a posibility to kill another chip");
+                    ChipPlayer.ToggleMobilityOfChips(this, false);
+                }
+                return;
+            }
+            else
+            {
+                CheckersBoard.Instance.ChangePlayerTurn();
+            }
             //Moves the position of the chip to the tile, conserving Y position
             transform.position = new(tileToMove.transform.position.x, transform.position.y, tileToMove.transform.position.z);
-            availableTiles.Clear(); //Clears the tiles available for the chip
-            
+            //chipPosition.PositionInBoard = tileToMove.PositionInBoard;       
         }
 
         /// <summary>

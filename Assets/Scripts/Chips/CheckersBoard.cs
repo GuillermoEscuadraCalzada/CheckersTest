@@ -4,7 +4,6 @@ using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-#if UNITY_EDITOR
 namespace Checkers
 {
 
@@ -22,12 +21,21 @@ namespace Checkers
         
         public static Tile[,] TilesArray { get; private set; } = new Tile[rowsAndCols, rowsAndCols];
 
-        Player NextPlayer =>currentPlayer == player1 ? player2 : player1;
+        public static CheckersBoard Instance;
+
+        public Player CurrentPlayer => currentPlayer; 
+
+        Player NextPlayer => currentPlayer = currentPlayer == player1 ? player2 : player1;
+
 
         //El transform que guarda todas las filas del tablero.
 
         private void Awake()
         {
+            if(Instance == null)
+            {
+                Instance = this;
+            }
             StartBoardIndexes();
             StartGame();
         }
@@ -39,7 +47,7 @@ namespace Checkers
 
         public void StartTurn(Player currentPlayer)
         {
-            currentPlayer.IsPlayerTurn = true;
+            currentPlayer.ToggleMobilityOfChips();
             //ChangePlayerTurn(); 
         }
 
@@ -48,22 +56,13 @@ namespace Checkers
             EndTurn(currentPlayer);  //Terminar turno actual
             StartTurn(NextPlayer);  //Inicia nuevo turno
         }
-        private void Update()
-        {
-            EndTurn(currentPlayer);
-        }
+
         public void EndTurn(Player currentPlayer)
         {
             if (IsDraw()|| SomePlayerHasNoMoreMoves () || SomePlayerHasEatenAllEnemyChips())
             {
-                //decidir el jugador victorioso o imprimirlo en pantalla
-                //En caso de que ninguna ficha se pueda mover
                 EndGame();
             }
-            // Validar si alguno de los dos ha ganado
-            //Win condition
-            //
-            currentPlayer.IsPlayerTurn = false;
         }
         void CheckForPlayerPosibleMoves(List<Chip> list, ref int globalMoves)
         { 
@@ -71,7 +70,7 @@ namespace Checkers
             foreach (var chip in list)
             {
                 chip.AvailableTilesToMove();
-                if (chip.availableTiles.Count > 0) 
+                if (chip.AvailableTiles.Count > 0) 
                     globalMoves++;
             }
             
@@ -110,7 +109,6 @@ namespace Checkers
                 print(s);
                 return true;
             }
-            print(s);
             return false;
         }
 
@@ -157,4 +155,3 @@ namespace Checkers
 
     }
 }
-#endif
