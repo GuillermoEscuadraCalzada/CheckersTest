@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
 
 namespace Checkers
@@ -12,12 +13,13 @@ namespace Checkers
         WHITE,
         BLACK
     }
-    public class Chip : MonoBehaviour
+    public class Chip : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
     {
         public static int ChipLayer = 6;
         public Chip_Color checkerColor; //Chip color
         [SerializeField] bool isChecker; //Is a checker or normal chip
         [SerializeField] Player chipPlayer; //Player Reference
+        [SerializeField] CameraChipSelection cameraChip;
 
         public ChipPosition chipPosition = new();
 
@@ -270,6 +272,23 @@ namespace Checkers
                     break;
             }
             return eatenChipPositionInBoard;
+        }
+
+        void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
+        {
+            NRPointerEventData nreventData = eventData as NRPointerEventData;
+            cameraChip.ClickChip();
+            //throw new System.NotImplementedException();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+                        //Current chip is the same the mouse is pointing at
+            if (CheckersBoard.Instance.CurrentPlayer.SelectedChip == transform.GetComponent<Chip>())
+                return; 
+            cameraChip.currentHovered = transform.gameObject; //Gets game object of raycast target
+            cameraChip.currentHovered.GetComponent<Renderer>().material.color = new Color(0, 1, 0);
+            //throw new System.NotImplementedException();
         }
     }
 }

@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Checkers
 {
     public enum TileChipT { NONE, BLACK, WHITE, BLACK_KING, WHITE_KING}
     public delegate void OnChipMovement();
 
-    public class Tile : MonoBehaviour
+    public class Tile : MonoBehaviour, IPointerClickHandler
     {
         //Type of the tile
         [SerializeField] TileChipT tileChipType = TileChipT.NONE;
@@ -15,6 +16,9 @@ namespace Checkers
         [SerializeField] PlayerNumber playerNumber = PlayerNumber.NONE;
         [SerializeField] Vector2Int positionInBoard;
         [SerializeField] bool isEndline;
+        [SerializeField] Collider _collider;
+
+        [SerializeField] CameraChipSelection cameraChip;
         public Color OriginalColor { get;  private set; }
 
         //Delegate para cuando una ficha entra en su collider
@@ -32,10 +36,18 @@ namespace Checkers
             OriginalColor= _renderer.material.color;
         }
 
-        private void OnTriggerEnter(Collider other)
+        public void OnTriggerEnter(Collider other)
         {
             CurrentChip = other.gameObject.GetComponent<Chip>();
             chipMovement?.Invoke();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            //OnTriggerEnter(_collider);
+            //chipMovement?.Invoke();
+            Debug.Log("Click");
+            cameraChip.TileSelection();
         }
 
         /// <summary>
