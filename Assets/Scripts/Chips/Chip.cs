@@ -13,7 +13,7 @@ namespace Checkers
         WHITE,
         BLACK
     }
-    public class Chip : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
+    public class Chip : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
         public static int ChipLayer = 6;
         public Chip_Color checkerColor; //Chip color
@@ -43,6 +43,7 @@ namespace Checkers
 
         private void OnDestroy()
         {
+            CheckersBoard.BOARD_INDEXES[chipPosition.PositionInBoard.x, chipPosition.PositionInBoard.y] = 0;
             chipPlayer.playerChips.Remove(this);
         }
 
@@ -82,7 +83,7 @@ namespace Checkers
                 else if (i == 2 && chipPlayer.PlayerNumber == (int)PlayerNumber.ONE && !IsChecker) break;
 
                 //Checks if the indicated tile is available
-                if (!CheckTileAvailabilty(indexesToCheck[i]))
+                  if (!CheckTileAvailabilty(indexesToCheck[i]))
                 {
                     //Adds tile to the chip list
                     AvailableTiles.Add(CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y]);
@@ -206,11 +207,11 @@ namespace Checkers
             {
                 Vector2Int newTile = SkipEatenChipTile(prevChip.chipPosition.PositionInBoard);
                 Destroy(prevChip.gameObject);
-                transform.position = 
+                transform.localPosition = 
                     new
-                    (CheckersBoard.TilesArray[newTile.x, newTile.y].transform.position.x, 
-                    transform.position.y, 
-                    CheckersBoard.TilesArray[newTile.x, newTile.y].transform.position.z);
+                    (CheckersBoard.TilesArray[newTile.x, newTile.y].transform.localPosition.x, 
+                    transform.localPosition.y, 
+                    CheckersBoard.TilesArray[newTile.x, newTile.y].transform.localPosition.z);
 
 
                 chipPosition.PositionInBoard = new Vector2Int(newTile.x, newTile.y);
@@ -232,7 +233,7 @@ namespace Checkers
                 CheckersBoard.Instance.ChangePlayerTurn();
             }
             //Moves the position of the chip to the tile, conserving Y position
-            transform.position = new(tileToMove.transform.position.x, transform.position.y, tileToMove.transform.position.z);
+            transform.localPosition = new(tileToMove.transform.localPosition.x, y: transform.localPosition.y, tileToMove.transform.localPosition.z);
             //chipPosition.PositionInBoard = tileToMove.PositionInBoard;       
         }
 
@@ -276,19 +277,17 @@ namespace Checkers
 
         void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
         {
-            NRPointerEventData nreventData = eventData as NRPointerEventData;
-            cameraChip.ClickChip();
-            //throw new System.NotImplementedException();
+            cameraChip.ClickChip(this);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-                        //Current chip is the same the mouse is pointing at
-            if (CheckersBoard.Instance.CurrentPlayer.SelectedChip == transform.GetComponent<Chip>())
-                return; 
-            cameraChip.currentHovered = transform.gameObject; //Gets game object of raycast target
-            cameraChip.currentHovered.GetComponent<Renderer>().material.color = new Color(0, 1, 0);
-            //throw new System.NotImplementedException();
+            cameraChip.OnHoverEnter(this);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            cameraChip.OnHoverEnter(this, false);
         }
     }
 }

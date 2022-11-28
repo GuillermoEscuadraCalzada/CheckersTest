@@ -97,8 +97,8 @@ SphereCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.31
-  m_Center: {x: 0, y: 0.96, z: 0}
+  m_Radius: 0.29
+  m_Center: {x: 0, y: 0.08, z: -0.0038222908}
 --- !u!54 &1213086806570209479
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -129,5 +129,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   checkerColor: 0
   isChecker: 0
-  positionInBoard: {x: 0, y: 0}
   chipPlayer: {fileID: 0}
+  cameraChip: {fileID: 0}

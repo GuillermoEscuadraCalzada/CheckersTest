@@ -47,7 +47,7 @@ namespace Checkers
             //OnTriggerEnter(_collider);
             //chipMovement?.Invoke();
             Debug.Log("Click");
-            cameraChip.TileSelection();
+            cameraChip.TileSelection(this);
         }
 
         /// <summary>
