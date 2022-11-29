@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Alonzo.unity
+    guid: 622d04265811b0f48a0ac20f4d3976cb
   m_configObjects: {}
