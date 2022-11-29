@@ -56,6 +56,10 @@ namespace Checkers
         {
             if (tileToCheck.IsEndline && (int)playerNumber != chipPlayer.PlayerNumber)
                 IsChecker = true;
+            if (IsChecker == true)
+            {
+                print("chip evolved to checker");
+            }
         }
            
 
