@@ -48,7 +48,7 @@ namespace Checkers
         public void StartTurn(Player currentPlayer)
         {
             currentPlayer.ToggleMobilityOfChips();
-            //ChangePlayerTurn(); 
+            CheckersBoardUI.Instance.UpdatePlayerTurn(currentPlayer.name);
         }
 
         public void ChangePlayerTurn()

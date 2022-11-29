@@ -39,12 +39,14 @@ namespace Checkers
         {
             OriginalColor = GetComponent<Renderer>().material.color;
             chipPlayer.playerChips.Add(this);
+            CheckersBoardUI.Instance.UpdateText(ChipPlayerValue - 1, ChipPlayer.playerChips.Count.ToString());
         }
 
         private void OnDestroy()
         {
             CheckersBoard.BOARD_INDEXES[chipPosition.PositionInBoard.x, chipPosition.PositionInBoard.y] = 0;
             chipPlayer.playerChips.Remove(this);
+            CheckersBoardUI.Instance.UpdateText(ChipPlayerValue - 1, ChipPlayer.playerChips.Count.ToString());
         }
 
         /// <summary>
@@ -87,7 +89,7 @@ namespace Checkers
                 else if (i == 2 && chipPlayer.PlayerNumber == (int)PlayerNumber.ONE && !IsChecker) break;
 
                 //Checks if the indicated tile is available
-                  if (!CheckTileAvailabilty(indexesToCheck[i]))
+                if (!CheckTileAvailabilty(indexesToCheck[i]))
                 {
                     //Adds tile to the chip list
                     AvailableTiles.Add(CheckersBoard.TilesArray[indexesToCheck[i].x, indexesToCheck[i].y]);
@@ -127,10 +129,8 @@ namespace Checkers
         /// </summary>
         /// <param name="position">The position that will be checked</param>
         /// <returns>Returns true if the position is out of bounds</returns>
-        private bool PositionOutOfBounds(Vector2Int position)
-        {
-            return (position.x < 0 || position.x > CheckersBoard.rowsAndCols - 1) || (position.y < 0 || position.y > CheckersBoard.rowsAndCols - 1);
-        }
+        private bool PositionOutOfBounds(Vector2Int position) => (position.x < 0 || position.x > CheckersBoard.rowsAndCols - 1) || (position.y < 0 || position.y > CheckersBoard.rowsAndCols - 1);
+        
 
         /// <summary>
         /// Detects if the available tiles have an enemy chip, if they have one, it will check if there is an empty space behind
