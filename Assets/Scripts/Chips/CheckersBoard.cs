@@ -27,7 +27,6 @@ namespace Checkers
 
         Player NextPlayer => currentPlayer = currentPlayer == player1 ? player2 : player1;
 
-
         //El transform que guarda todas las filas del tablero.
 
         private void Awake()
@@ -37,9 +36,12 @@ namespace Checkers
                 Instance = this;
             }
             StartBoardIndexes();
-            StartGame();
         }
-
+        private void Start()
+        {
+            StartGame();
+            
+        }
         public void StartGame()
         {
             StartTurn(currentPlayer);
@@ -53,10 +55,14 @@ namespace Checkers
 
         public void ChangePlayerTurn()
         {
-            EndTurn(currentPlayer);  //Terminar turno actual
-            StartTurn(NextPlayer);  //Inicia nuevo turno
+            EndTurn(currentPlayer);  //Ends currentPlayer turn
+            StartTurn(NextPlayer);  //Starts next player turn
         }
 
+        /// <summary>
+        /// Ends the turn of the current player and checks for end game conditions
+        /// </summary>
+        /// <param name="currentPlayer">The turn of the current Player</param>
         public void EndTurn(Player currentPlayer)
         {
             if (IsDraw()|| SomePlayerHasNoMoreMoves () || SomePlayerHasEatenAllEnemyChips())
@@ -64,16 +70,19 @@ namespace Checkers
                 EndGame();
             }
         }
+        /// <summary>
+        /// Checks for every posible move of every chip after each turn
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="globalMoves"></param>
         void CheckForPlayerPosibleMoves(List<Chip> list, ref int globalMoves)
-        { 
-            
+        {             
             foreach (var chip in list)
             {
                 chip.AvailableTilesToMove();
                 if (chip.AvailableTiles.Count > 0) 
                     globalMoves++;
-            }
-            
+            }            
         }
 
         private bool IsDraw()

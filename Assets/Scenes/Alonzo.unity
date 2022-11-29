@@ -5290,6 +5290,9 @@ MonoBehaviour:
   playersChipCount:
   - {fileID: 784071991}
   - {fileID: 1155361497}
+  endGamePanels:
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!4 &1134054591 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2793319655051551650, guid: 6ad693523bde621469e78f1f9747da5a, type: 3}

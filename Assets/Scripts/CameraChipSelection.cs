@@ -40,7 +40,6 @@ namespace Checkers
             //current hovered color returns to original.
             currentHovered.GetComponent<Renderer>().material.color = currentHovered.GetComponent<Chip>().OriginalColor;
             currentHovered = null; //sets hovered to null
-
         }
         
         /// <summary>
@@ -48,30 +47,25 @@ namespace Checkers
         /// </summary>
         public void ClickChip(Chip clickedChip)
         {
-
             Chip currentSelectedChip = checkersBoard.CurrentPlayer.SelectedChip; //gets selected chip of currentPlayer
 
             //Checks if the raycast detected a chip and if the chip belongs to the currentPlayer
             if (clickedChip.ChipPlayerValue != checkersBoard.CurrentPlayer.PlayerNumber
-                || !clickedChip.CanMove)
+                || !clickedChip.CanMove|| clickedChip == currentSelectedChip)
                 return;
 
-            //game object is different to current selected chip
-            if (clickedChip != currentSelectedChip)
+            //Current selected chip is not null
+            if(currentSelectedChip != null)
             {
-                //Current selected chip is not null
-                if(currentSelectedChip != null)
-                {
-                    //Material's color returns to original color
-                    currentSelectedChip.GetComponent<Renderer>().material.color = currentSelectedChip.GetComponent<Chip>().OriginalColor;
-                    currentSelectedChip.ToggleAvailableTiles(false); //Turns off available tiles for this chip
-                }
-                checkersBoard.CurrentPlayer.SelectedChip = currentSelectedChip = clickedChip;                  
-                currentSelectedChip.GetComponent<Renderer>().material.color = currentSelectedChip.OriginalColor; 
-                currentSelectedChip.AvailableTilesToMove();
-                currentSelectedChip.ToggleAvailableTiles(true); //Turns off available tiles for this chip
-                currentSelectedChip.GetComponent<Renderer>().material.color = new Color(0, 0, 1);
+                //Material's color returns to original color
+                currentSelectedChip.GetComponent<Renderer>().material.color = currentSelectedChip.GetComponent<Chip>().OriginalColor;
+                currentSelectedChip.ToggleAvailableTiles(false); //Turns off available tiles for this chip
             }
+            checkersBoard.CurrentPlayer.SelectedChip = currentSelectedChip = clickedChip;                  
+            currentSelectedChip.GetComponent<Renderer>().material.color = currentSelectedChip.OriginalColor; 
+            currentSelectedChip.AvailableTilesToMove();
+            currentSelectedChip.ToggleAvailableTiles(true); //Turns off available tiles for this chip
+            currentSelectedChip.GetComponent<Renderer>().material.color = new Color(0, 0, 1);           
         }
 
         /// <summary>
@@ -79,18 +73,13 @@ namespace Checkers
         /// </summary>
         public void TileSelection(Tile selectedTile)
         {
-            Chip currentChip = checkersBoard.CurrentPlayer.SelectedChip;
-            //if(!Input.GetMouseButtonDown(0) || !checkersBoard.CurrentPlayer.SelectedChip) return;
-            if (!currentChip) return;
-
-    
-                if(!currentChip || !selectedTile) return; //there is no currentSelectedChip, therefore, can't select tile to move
+            Chip currentChip = checkersBoard.CurrentPlayer.SelectedChip;    
+            if(!currentChip || !selectedTile) return; //there is no currentSelectedChip, therefore, can't select tile to move
             currentChip.ToggleAvailableTiles(false);
             //Moves chip to the selected tile
             currentChip.MoveToTile(selectedTile);
             currentChip.GetComponent<Renderer>().material.color = currentChip.OriginalColor;
-            checkersBoard.CurrentPlayer.SelectedChip = null;
-            
+            checkersBoard.CurrentPlayer.SelectedChip = null;           
         }
     }
 }

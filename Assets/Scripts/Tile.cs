@@ -12,7 +12,6 @@ namespace Checkers
     {
         //Type of the tile
         [SerializeField] TileChipT tileChipType = TileChipT.NONE;
-        [SerializeField] private Renderer _renderer;
         [SerializeField] PlayerNumber playerNumber = PlayerNumber.NONE;
         [SerializeField] Vector2Int positionInBoard;
         [SerializeField] bool isEndline;
@@ -28,12 +27,11 @@ namespace Checkers
 
         public TileChipT TileCheckerType => tileChipType;
         public Vector2Int PositionInBoard { get => positionInBoard; set => positionInBoard = value; }
-        public Renderer Renderer { get => _renderer; }
         public bool IsEndline => isEndline;
         private void Awake()
         {
             chipMovement = ChipMovesToTile;
-            OriginalColor= _renderer.material.color;
+            OriginalColor= GetComponent<Renderer>().material.color;
         }
 
         public void OnTriggerEnter(Collider other)
@@ -44,8 +42,6 @@ namespace Checkers
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            //OnTriggerEnter(_collider);
-            //chipMovement?.Invoke();
             Debug.Log("Click");
             cameraChip.TileSelection(this);
         }

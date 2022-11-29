@@ -12,7 +12,7 @@ namespace Checkers
 
         [SerializeField] Text playerTurn;
         [SerializeField] Text[] playersChipCount;
-
+        [SerializeField] GameObject[] endGamePanels;
         private void Awake()
         {
             if (!Instance) Instance = this;
@@ -27,6 +27,11 @@ namespace Checkers
         {
             if (playersChipCount[index] == null) return;
             playersChipCount[index].text = text;
+        }
+
+        public void EnableWinningDraw()
+        {
+
         }
 
     }

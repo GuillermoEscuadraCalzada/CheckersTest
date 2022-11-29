@@ -15,7 +15,6 @@ namespace Checkers
     }
     public class Chip : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
-        public static int ChipLayer = 6;
         public Chip_Color checkerColor; //Chip color
         [SerializeField] bool isChecker; //Is a checker or normal chip
         [SerializeField] Player chipPlayer; //Player Reference
@@ -23,11 +22,13 @@ namespace Checkers
 
         public ChipPosition chipPosition = new();
 
-
+        //Original color of the chip
         public Color OriginalColor { get; private set; }
 
+        //Flag for the chip can move
         public bool CanMove { get; set; } = false;
 
+        //Available tiles for the chip to move
         public List<Tile> AvailableTiles { get; } = new(4);
         public List<Chip> PosibleChipsToEat { get; } = new(4);
         public bool IsChecker { get =>isChecker; set => isChecker = value; }
@@ -39,9 +40,12 @@ namespace Checkers
         {
             OriginalColor = GetComponent<Renderer>().material.color;
             chipPlayer.playerChips.Add(this);
-            CheckersBoardUI.Instance.UpdateText(ChipPlayerValue - 1, ChipPlayer.playerChips.Count.ToString());
         }
-
+        private void Start()
+        {
+            CheckersBoardUI.Instance.UpdateText(ChipPlayerValue - 1, ChipPlayer.playerChips.Count.ToString());
+            
+        }
         private void OnDestroy()
         {
             CheckersBoard.BOARD_INDEXES[chipPosition.PositionInBoard.x, chipPosition.PositionInBoard.y] = 0;
@@ -188,7 +192,7 @@ namespace Checkers
             foreach (var tile in AvailableTiles)
             {
                 //Changes renderer color for this tile material
-                tile.Renderer.material.color
+                tile.GetComponent<Renderer>().material.color
                 = toggle ? new Color(1, 0, 0) : tile.OriginalColor;
             }
         }
@@ -200,17 +204,24 @@ namespace Checkers
         public void MoveToTile(Tile tileToMove, bool searchOnList = true)
         {
             if (!tileToMove) return; //Tile to move is nu ll
+
             //Looks for the tile on the list of tiles from this chip
             Tile foundTile = tileToMove;
+
+            //Searches tile on available tiles list
             if (searchOnList)
                 foundTile = AvailableTiles.Find(x => x == tileToMove);
-            if (!foundTile) return; //Return if tile is null
 
-            Chip prevChip = tileToMove.CurrentChip;
+            if (!foundTile) return; //Return if tile wasn't found
+
+            Chip prevChip = tileToMove.CurrentChip; //get tile current Chip
+            //prev chip is not null
             if (prevChip)
             {
-                Vector2Int newTile = SkipEatenChipTile(prevChip.chipPosition.PositionInBoard);
-                Destroy(prevChip.gameObject);
+                //Get new position in board from previous chip position
+                Vector2Int newTile = SkipEatenChipTile(prevChip.chipPosition.PositionInBoard); 
+                Destroy(prevChip.gameObject); //destroy previous tile chip
+                //Move chip to new tile position
                 transform.localPosition = 
                     new
                     (CheckersBoard.TilesArray[newTile.x, newTile.y].transform.localPosition.x, 
@@ -218,8 +229,8 @@ namespace Checkers
                     CheckersBoard.TilesArray[newTile.x, newTile.y].transform.localPosition.z);
 
 
-                chipPosition.PositionInBoard = new Vector2Int(newTile.x, newTile.y);
-                //MoveToTile(CheckersBoard.TilesArray[newTile.x, newTile.y], false);
+                chipPosition.PositionInBoard = new Vector2Int(newTile.x, newTile.y); //Change tile position in board
+
                 AvailableTilesToMove();
                 if (PosibleChipsToEat.Count == 0)
                 {
@@ -227,7 +238,6 @@ namespace Checkers
                 }
                 else
                 {
-                    print("Moved Chip has a posibility to kill another chip");
                     ChipPlayer.ToggleMobilityOfChips(this, false);
                 }
                 return;
@@ -237,8 +247,7 @@ namespace Checkers
                 CheckersBoard.Instance.ChangePlayerTurn();
             }
             //Moves the position of the chip to the tile, conserving Y position
-            transform.localPosition = new(tileToMove.transform.localPosition.x, y: transform.localPosition.y, tileToMove.transform.localPosition.z);
-            //chipPosition.PositionInBoard = tileToMove.PositionInBoard;       
+            transform.localPosition = new(tileToMove.transform.localPosition.x, y: transform.localPosition.y, tileToMove.transform.localPosition.z);    
         }
 
         /// <summary>
