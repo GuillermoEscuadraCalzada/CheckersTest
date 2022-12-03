@@ -75,7 +75,7 @@ namespace Checkers
         /// </summary>
         /// <param name="list"></param>
         /// <param name="globalMoves"></param>
-        void CheckForPlayerPosibleMoves(List<Chip> list, ref int globalMoves)
+        public void CheckForPlayerPosibleMoves(List<Chip> list, ref int globalMoves)
         {             
             foreach (var chip in list)
             {

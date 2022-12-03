@@ -42,7 +42,6 @@ namespace Checkers
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            Debug.Log("Click");
             cameraChip.TileSelection(this);
         }
 
